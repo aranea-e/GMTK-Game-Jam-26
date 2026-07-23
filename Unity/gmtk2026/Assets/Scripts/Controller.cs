@@ -4,11 +4,14 @@ public class Controller : MonoBehaviour {
     [SerializeField] private float _moveSpeed;
     [SerializeField] private float _friction;
     [SerializeField] private float _jumpHeight;
+    [SerializeField] private float _groundCheckDistance = 0.1f;
 
     public Rigidbody rb {get; set;}
+    private Collider _collider;
 
     void Awake() {
         rb = GetComponent<Rigidbody>();
+        _collider = GetComponent<Collider>();
     }
 
     void FixedUpdate() {
@@ -32,10 +35,22 @@ public class Controller : MonoBehaviour {
             y = -1;
         }
 
+        if (y > 0 && wallInDirection(Vector3.up)) {
+            y = 0;
+        } else if (y < 0 && wallInDirection(Vector3.down)) {
+            y = 0;
+        }
+
         if (Input.GetKey(KeyCode.A)) {
             x = -1;
         } else if (Input.GetKey(KeyCode.D)) {
             x = 1;
+        }
+
+        if (x > 0 && wallInDirection(Vector3.right)) {
+            x = 0;
+        } else if (x < 0 && wallInDirection(Vector3.left)) {
+            x = 0;
         }
 
         return new Vector2(x, y).normalized;
@@ -67,9 +82,43 @@ public class Controller : MonoBehaviour {
     }
 
     void jump() {
-        if (Input.GetKeyDown(KeyCode.Space)) {
+        if (Input.GetKeyDown(KeyCode.Space) && isGrounded()) {
             rb.velocity = new Vector3(rb.velocity.x, rb.velocity.y, _jumpHeight);
         }
     }
 
+    bool isGrounded() {
+        Bounds bounds = _collider.bounds;
+        Vector3 center = bounds.center;
+        Vector3 halfExtents = bounds.extents * 0.95f;
+
+        return Physics.BoxCast(
+            center,
+            halfExtents,
+            Vector3.forward,
+            out _,
+            transform.rotation,
+            _groundCheckDistance,
+            ~0,
+            QueryTriggerInteraction.Ignore
+        );
+    }
+
+    bool wallInDirection(Vector3 direction)
+    {
+        Bounds bounds = _collider.bounds;
+        Vector3 center = bounds.center;
+        Vector3 halfExtents = bounds.extents * 0.95f;
+
+        return Physics.BoxCast(
+            center,
+            halfExtents,
+            direction,
+            out _,
+            transform.rotation,
+            _groundCheckDistance,
+            ~0,
+            QueryTriggerInteraction.Ignore
+        );
+    }
 }

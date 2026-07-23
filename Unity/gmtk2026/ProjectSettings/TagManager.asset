@@ -41,3 +41,18 @@ TagManager:
   - name: Default
     uniqueID: 0
     locked: 0
+  - name: Ground
+    uniqueID: 3643014413
+    locked: 0
+  - name: Shelves
+    uniqueID: 3334549047
+    locked: 0
+  - name: Walls
+    uniqueID: 2828481635
+    locked: 0
+  - name: Ceilings
+    uniqueID: 2881704457
+    locked: 0
+  - name: Player
+    uniqueID: 1743397665
+    locked: 0

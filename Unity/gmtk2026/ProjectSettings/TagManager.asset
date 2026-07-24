@@ -5,6 +5,8 @@ TagManager:
   serializedVersion: 2
   tags:
   - AlarmManager
+  - Bullet
+  - Van
   layers:
   - Default
   - TransparentFX
@@ -51,12 +53,21 @@ TagManager:
   - name: Shelves
     uniqueID: 3334549047
     locked: 0
+  - name: Below Roof
+    uniqueID: 567571959
+    locked: 0
+  - name: Targets
+    uniqueID: 751388125
+    locked: 0
   - name: Walls
     uniqueID: 2828481635
     locked: 0
   - name: Ceilings
     uniqueID: 2881704457
     locked: 0
-  - name: Player
+  - name: Above Roof
     uniqueID: 1743397665
+    locked: 0
+  - name: Van
+    uniqueID: 685763073
     locked: 0

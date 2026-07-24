@@ -8,10 +8,16 @@ public class Controller : MonoBehaviour {
 
     public Rigidbody rb {get; set;}
     private Collider _collider;
+    private BulletSpawner _bulletSpawner;
+
+    GameManager gm;
 
     void Awake() {
+        gm = FindObjectOfType<GameManager>();
+
         rb = GetComponent<Rigidbody>();
         _collider = GetComponent<Collider>();
+        _bulletSpawner = FindObjectOfType<BulletSpawner>();
     }
 
     void FixedUpdate() {
@@ -23,6 +29,7 @@ public class Controller : MonoBehaviour {
     {
         move(readMoveInput(), _moveSpeed);
         jump();
+        fire();
     }
 
     Vector2 readMoveInput() {
@@ -87,6 +94,14 @@ public class Controller : MonoBehaviour {
         }
     }
 
+    void fire()
+    {
+        if (Input.GetMouseButtonDown(0))
+        {
+            _bulletSpawner.SpawnBullet();
+        }
+    }
+
     bool isGrounded() {
         Bounds bounds = _collider.bounds;
         Vector3 center = bounds.center;
@@ -120,5 +135,13 @@ public class Controller : MonoBehaviour {
             ~0,
             QueryTriggerInteraction.Ignore
         );
+    }
+
+    void OnTriggerEnter(Collider other)
+    {
+        if (other.gameObject.CompareTag("Van") && gm.objectivesCompleted())
+        {
+            Debug.Log("Win");
+        }
     }
 }

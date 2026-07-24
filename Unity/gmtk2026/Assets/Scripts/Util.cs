@@ -16,5 +16,4 @@ public static class Util {
                high.x >= mousePosition().x &&
                high.y >= mousePosition().y;
     }
-    
 }

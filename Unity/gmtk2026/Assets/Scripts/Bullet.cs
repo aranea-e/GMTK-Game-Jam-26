@@ -79,4 +79,17 @@ public class Bullet : MonoBehaviour {
             QueryTriggerInteraction.Ignore
         );
     }
+
+    void DestroyBullet()
+    {
+        Destroy(gameObject);
+    }
+
+    void OnTriggerEnter(Collider other)
+    {
+        if (other.gameObject.layer == LayerMask.NameToLayer("Wall"))
+        {
+            DestroyBullet();
+        }
+    }
 }

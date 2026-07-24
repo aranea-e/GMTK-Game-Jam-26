@@ -6,17 +6,20 @@ public class Ceiling : MonoBehaviour
     public Transform player;
     public Room room;
     public Tilemap tmp;
+    public Cam cam;
 
     public float transparency;
     public float fadeRate;
     public bool hide;
     public float minTransparency;
+    public bool AtWindow {get; set;}
 
     void Awake()
     {
         player = GameObject.FindGameObjectWithTag("Player").transform;
         room = GetComponentInParent<Room>();
         tmp = GetComponentInChildren<Tilemap>();
+        cam = GameObject.FindGameObjectWithTag("MainCamera").GetComponent<Cam>();
     }
 
     void Start()
@@ -33,7 +36,13 @@ public class Ceiling : MonoBehaviour
 
     bool playerInside()
     {
-        return room.playerInside();
+        if (room.playerInside()) return true;
+        if (Mathf.Abs(Util.mousePosition().y - transform.position.y) < room.roomSize.y * 0.5f &&
+            Mathf.Abs(Util.mousePosition().x - transform.position.x) < room.roomSize.x * 0.5f &&
+            player.position.z >= -0.90f &&
+            cam.followType == 1 &&
+            AtWindow) return true;
+        return false;
     }
 
     void updateTransparency()

@@ -3,6 +3,15 @@ using UnityEngine;
 public class GameManager : MonoBehaviour {
     public bool[] Objectives;
 
+    private float _transtimer;
+
+    public AlarmManager alarmManager;
+
+    void Awake()
+    {
+        alarmManager = GameObject.FindGameObjectWithTag("AlarmManager").GetComponent<AlarmManager>();
+    }
+
     public bool objectivesCompleted()
     {
         foreach (bool o in Objectives)

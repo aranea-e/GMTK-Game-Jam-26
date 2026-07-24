@@ -44,11 +44,26 @@ public class AlarmManager : MonoBehaviour
         alarmActive = false;
     }
 
+    public void advanceAlarmTimer(float amount)
+    {
+        if (!alarmActive) return;
+        alarmTimer -= amount;
+        if (alarmTimer <= 0)
+        {
+            advanceAlarmStage();
+        }
+    }
+
     [ContextMenu("Advance Alarm Stage")]
     void advanceAlarmStage()
     {
         alarmStage++;
-        alarmTimer = alarmDuration;
+        alarmTimer += alarmDuration;
+        if (alarmTimer <= 0)
+        {
+            advanceAlarmStage();
+            return;
+        }
         if (alarmStage > 2)
         {
             Debug.Log("Game over.");
@@ -59,14 +74,18 @@ public class AlarmManager : MonoBehaviour
     void updateUI()
     {
         alarmImage.enabled = alarmStage > 0;
-        alarmProgressBar.enabled = alarmActive;
+        alarmProgressBar.enabled = alarmActive || alarmStage > 2;
 
         int stageImage = Mathf.Min(2, alarmStage);
         alarmStageImage.sprite = alarmStageImages[stageImage];
         alarmProgressBar.color = alarmStageColors[stageImage];
 
         if (!alarmActive) return;
-        float barWidth = 158 * (1.0f - alarmTimer / alarmDuration);
+
+        float percent = alarmTimer / alarmDuration;
+        if (alarmStage > 2) percent = 1;
+
+        float barWidth = 158 * (1.0f - percent);
         float barPosX = 17 + (barWidth) / 2;
         alarmProgressBar.rectTransform.anchoredPosition = new Vector2(barPosX, alarmProgressBar.rectTransform.anchoredPosition.y);
         alarmProgressBar.rectTransform.sizeDelta = new Vector2(barWidth, alarmProgressBar.rectTransform.sizeDelta.y);

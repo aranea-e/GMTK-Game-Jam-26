@@ -122,26 +122,73 @@ public class Controller : MonoBehaviour {
     bool wallInDirection(Vector3 direction)
     {
         Bounds bounds = _collider.bounds;
-        Vector3 center = bounds.center;
-        Vector3 halfExtents = bounds.extents * 0.95f;
+        Vector3 directionNormalized = direction.normalized;
+        Vector3 directionMask = new Vector3(
+            Mathf.Abs(directionNormalized.x),
+            Mathf.Abs(directionNormalized.y),
+            Mathf.Abs(directionNormalized.z)
+        );
 
-        return Physics.BoxCast(
+        Vector3 halfExtents = bounds.extents * 0.95f;
+        Vector3 surfaceOffset = Vector3.Scale(bounds.extents, directionMask);
+        Vector3 center = bounds.center + new Vector3(
+            surfaceOffset.x * directionNormalized.x,
+            surfaceOffset.y * directionNormalized.y,
+            surfaceOffset.z * directionNormalized.z
+        ) + directionNormalized * _groundCheckDistance;
+
+        Collider[] hits = Physics.OverlapBox(
             center,
             halfExtents,
-            direction,
-            out _,
             transform.rotation,
-            _groundCheckDistance,
             ~0,
             QueryTriggerInteraction.Ignore
         );
+
+        foreach (Collider hit in hits)
+        {
+            if (hit == _collider)
+            {
+                continue;
+            }
+
+            if (Physics.GetIgnoreLayerCollision(gameObject.layer, hit.gameObject.layer))
+            {
+                continue;
+            }
+
+            if (hit != _collider)
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     void OnTriggerEnter(Collider other)
     {
-        if (other.gameObject.CompareTag("Van") && gm.objectivesCompleted())
+        switch (other.gameObject.tag)
         {
-            Debug.Log("Win");
+            case "Van":
+                if (gm.objectivesCompleted())
+                {
+                    Debug.Log("Win");
+                }
+                break;
+            case "Window":
+                other.gameObject.GetComponent<Window>().EnterWindow();
+                break;
+        }
+    }
+
+    void OnTriggerExit(Collider other)
+    {
+        switch (other.gameObject.tag)
+        {
+            case "Window":
+                other.gameObject.GetComponent<Window>().ExitWindow();
+                break;
         }
     }
 }

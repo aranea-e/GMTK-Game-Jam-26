@@ -7,6 +7,7 @@ TagManager:
   - AlarmManager
   - Bullet
   - Van
+  - Window
   layers:
   - Default
   - TransparentFX
@@ -15,12 +16,12 @@ TagManager:
   - Water
   - UI
   - 
-  - 
-  - 
-  - 
-  - 
-  - 
-  - 
+  - Player
+  - NPCs
+  - World
+  - Wall
+  - Shelf
+  - Bullet
   - 
   - 
   - 

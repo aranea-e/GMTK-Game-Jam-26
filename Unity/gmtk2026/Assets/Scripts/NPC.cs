@@ -6,7 +6,7 @@ public class NPC : MonoBehaviour {
     public string type;
     public Sprite[] sprites;
     public int tID;
-    private bool _alive;
+    private bool _alive = true;
 
     GameManager gm;
 
@@ -20,11 +20,23 @@ public class NPC : MonoBehaviour {
 
     void OnTriggerEnter(Collider other)
     {
+        if (!_alive) return;
+
         if (other.gameObject.CompareTag("Bullet"))
         {
             _alive = false;
             _sprite.sprite = sprites[1];
-            gm.completeObjective(tID);
+            switch (type)
+            {
+                case "Target":
+                    gm.completeObjective(tID);
+                    gm.alarmManager.startAlarm();
+                    break;
+                case "Guard":
+                    gm.alarmManager.startAlarm();
+                    gm.alarmManager.advanceAlarmTimer(5.0f);
+                    break;
+            }
         }
     }
 }

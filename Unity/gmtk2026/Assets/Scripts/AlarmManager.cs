@@ -3,10 +3,10 @@ using UnityEngine.UI;
 
 public class AlarmManager : MonoBehaviour
 {
-    public bool alarmActive {get; private set;}
-    public float alarmTimer {get; private set;}
+    public bool alarmActive { get; private set; }
+    public float alarmTimer { get; private set; }
     public float alarmDuration;
-    public int alarmStage {get; private set;} // 0=calm, 1=alert, 2=lockdown, 3=fail
+    public int alarmStage { get; private set; } // 0=calm, 1=alert, 2=lockdown, 3=fail
 
     public Image alarmImage;
     public Image alarmStageImage;
@@ -66,7 +66,21 @@ public class AlarmManager : MonoBehaviour
         }
         if (alarmStage > 2)
         {
-            Debug.Log("Game over.");
+            alarmTimer = 0;
+            stopAlarm();
+
+            FindObjectOfType<GameManager>().endGame("Police arrived. You failed to escape.");
+        }
+    }
+
+    public void advanceAlarmTo(int stage)
+    {
+        if (stage <= alarmStage) return;
+        alarmStage = stage;
+        alarmTimer = alarmDuration;
+        if (alarmStage > 2)
+        {
+            FindObjectOfType<GameManager>().endGame("Police arrived. You failed to escape.");
             stopAlarm();
         }
     }

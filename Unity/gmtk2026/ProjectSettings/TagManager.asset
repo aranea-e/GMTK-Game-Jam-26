@@ -8,6 +8,7 @@ TagManager:
   - Bullet
   - Van
   - Window
+  - BulletSpawner
   layers:
   - Default
   - TransparentFX

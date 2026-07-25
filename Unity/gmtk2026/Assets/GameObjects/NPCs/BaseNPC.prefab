@@ -110,7 +110,7 @@ Transform:
   m_GameObject: {fileID: 3732021206213427478}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0.5}
+  m_LocalPosition: {x: 0, y: 0, z: 0.4}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -349,6 +349,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b35f6396f5668284fa393bee8a7bde30, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  detectionSpeed: 2
   detectionBars:
   - {fileID: 8294089496097494228}
   - {fileID: 8022635384349072416}
@@ -371,6 +372,19 @@ MonoBehaviour:
   edgeResolveIterations: 6
   edgeDstThreshold: 0
   viewMeshFilter: {fileID: 8670745798910343910}
+  targetPosition: {x: 0, y: 0}
+  aiState: Idle
+  walkSpeed: 2
+  investigateSpeed: 5
+  runSpeed: 4
+  _alertProgress: 0
+  _fireDelay: 0.25
+  fireRate: 0.5
+  swayRateIdle: 3
+  swayAmountIdle: 30
+  swayRateSearch: 0.5
+  swayAmountSearch: 90
+  wanderTargetAttempts: 100
 --- !u!1 &7171561564985512958
 GameObject:
   m_ObjectHideFlags: 0
@@ -500,6 +514,7 @@ GameObject:
   - component: {fileID: 4629110710691160069}
   - component: {fileID: 8670745798910343910}
   - component: {fileID: 664343731153082445}
+  - component: {fileID: 7562210289524928639}
   m_Layer: 8
   m_Name: Viewcone
   m_TagString: Untagged
@@ -516,7 +531,7 @@ Transform:
   m_GameObject: {fileID: 8609538012530218396}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: 0.45}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -538,8 +553,8 @@ MeshRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8609538012530218396}
   m_Enabled: 1
-  m_CastShadows: 1
-  m_ReceiveShadows: 1
+  m_CastShadows: 0
+  m_ReceiveShadows: 0
   m_DynamicOccludee: 1
   m_StaticShadowCaster: 0
   m_MotionVectors: 1
@@ -550,7 +565,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 0}
+  - {fileID: 2100000, guid: d71db5128888d4c43b918a4dd4c46a26, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -568,7 +583,19 @@ MeshRenderer:
   m_AutoUVMaxDistance: 0.5
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
-  m_SortingLayerID: 0
-  m_SortingLayer: 0
+  m_SortingLayerID: 751388125
+  m_SortingLayer: 5
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!210 &7562210289524928639
+SortingGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8609538012530218396}
+  m_Enabled: 1
+  m_SortingLayerID: 751388125
+  m_SortingLayer: 5
+  m_SortingOrder: 0
+  m_SortAtRoot: 0

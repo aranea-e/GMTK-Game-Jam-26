@@ -98,7 +98,7 @@ public class Controller : MonoBehaviour {
     {
         if (Input.GetMouseButtonDown(0))
         {
-            _bulletSpawner.SpawnBullet();
+            _bulletSpawner.SpawnBulletPlayer();
         }
     }
 
@@ -173,11 +173,17 @@ public class Controller : MonoBehaviour {
             case "Van":
                 if (gm.objectivesCompleted())
                 {
-                    Debug.Log("Win");
+                    gm.endGame("Target eliminated. You escaped successfully.");
                 }
                 break;
             case "Window":
                 other.gameObject.GetComponent<Window>().EnterWindow();
+                break;
+            case "Bullet":
+                if (other.gameObject.GetComponent<Bullet>().allegiance == "Enemy")
+                {
+                    gm.endGame("You were shot, dumbahh");
+                }
                 break;
         }
     }

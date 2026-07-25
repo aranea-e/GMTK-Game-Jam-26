@@ -11,6 +11,8 @@ public class Bullet : MonoBehaviour {
     public float fallSpeed;
     public float heightDiff;
 
+    public string allegiance;
+
     void Awake()
     {
         rb = GetComponent<Rigidbody>();
@@ -87,6 +89,7 @@ public class Bullet : MonoBehaviour {
 
     void OnTriggerEnter(Collider other)
     {
+        
         if (other.gameObject.layer == LayerMask.NameToLayer("Wall"))
         {
             DestroyBullet();

@@ -14,7 +14,7 @@ public class BulletSpawner : MonoBehaviour
         player = GameObject.FindGameObjectWithTag("Player").transform;
     }
 
-    public void SpawnBullet()
+    public void SpawnBulletPlayer()
     {
         GameObject bullet = Instantiate(bulletPrefab, transform);
         bullets.Add(bullet);
@@ -28,5 +28,23 @@ public class BulletSpawner : MonoBehaviour
 
         float angle = Mathf.Rad2Deg * Mathf.Atan2(direction.y, direction.x);
         bullet.transform.rotation = Quaternion.Euler(new Vector3(0, 0, angle));
+        bullet.GetComponent<Bullet>().allegiance = "Player";
+    }
+
+    public void SpawnBulletEnemy(Transform enemy, Vector2 target)
+    {
+        GameObject bullet = Instantiate(bulletPrefab, transform);
+        bullets.Add(bullet);
+
+        Vector3 position = enemy.position;
+        position.z = Mathf.Ceil(position.z - 0.1f);
+        bullet.transform.position = position;
+
+        Vector2 direction = new Vector2(target.x - enemy.position.x,
+                                        target.y - enemy.position.y);
+
+        float angle = Mathf.Rad2Deg * Mathf.Atan2(direction.y, direction.x);
+        bullet.transform.rotation = Quaternion.Euler(new Vector3(0, 0, angle));
+        bullet.GetComponent<Bullet>().allegiance = "Enemy";
     }
 }

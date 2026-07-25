@@ -5,6 +5,8 @@ public class Room : MonoBehaviour
     public Transform player;
     public AlarmManager alarmManager;
     public bool alarmed;
+    public bool spawnGuards;
+    public bool spawnTarget;
     public Vector2 roomSize = new Vector2(8.0f, 8.0f);
 
     void Awake()

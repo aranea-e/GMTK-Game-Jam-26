@@ -1,7 +1,10 @@
 using UnityEngine;
 using System.Collections.Generic;
 
-public class NPC : MonoBehaviour {
+public class NPC : MonoBehaviour
+{
+    public float detectionSpeed = 1.0f;
+
     private SpriteRenderer _sprite;
     private Transform _spriteTransform;
     public Transform[] detectionBars;
@@ -14,7 +17,7 @@ public class NPC : MonoBehaviour {
     GameManager gm;
 
     public float viewRadius;
-    [Range(0,360)]
+    [Range(0, 360)]
     public float viewAngle;
     public LayerMask targetMask;
     public LayerMask obstacleMask;
@@ -28,6 +31,26 @@ public class NPC : MonoBehaviour {
     Mesh viewMesh;
 
     private float _detection = 0.0f;
+
+    public Vector2 targetPosition;
+    public string aiState = "Idle";
+    public float walkSpeed = 1.0f;
+    public float investigateSpeed = 1.0f;
+    public float runSpeed = 1.0f;
+    [SerializeField] private float _alertProgress = 0.0f;
+    [SerializeField] private float _fireDelay = 0.25f;
+    public float fireRate = 0.5f;
+
+    private float _swayTimer = 0.0f;
+    public float swayRateIdle = 1.0f;
+    public float swayAmountIdle = 5.0f;
+    public float swayRateSearch = 1.0f;
+    public float swayAmountSearch = 5.0f;
+    private float _swayOffset = 0.0f;
+
+    private float _wanderTimer = 0.0f;
+    private float _wanderDelay = 1.0f;
+    public int wanderTargetAttempts = 10;
 
     void Awake()
     {
@@ -44,14 +67,157 @@ public class NPC : MonoBehaviour {
 
     void Start()
     {
+        _swayTimer = Random.Range(0.0f, 2.0f * Mathf.PI);
+        _wanderDelay = Random.Range(0.0f, 10.0f);
     }
 
     void LateUpdate()
     {
-        FindVisibleTargets();
-        DrawFieldOfView();
-        DetectPlayer();
+        if (!_alive)
+        {
+            aiState = "Dead";
+        }
+        else
+        {
+            FindVisibleTargets();
+            DrawFieldOfView();
+            DetectPlayer();
+        }
+
+        Move();
         Render();
+    }
+
+    void Move()
+    {
+        if (_alive)
+        {
+            switch (aiState)
+            {
+                case "Idle":
+                    Sway(true, false, swayRateIdle, swayAmountIdle);
+                    _wanderTimer += Time.deltaTime;
+                    if (_wanderTimer >= _wanderDelay)
+                    {
+                        _wanderTimer = 0.0f;
+                        targetPosition = FindWanderTarget();
+                        _wanderDelay = Random.Range(4.0f, 6.0f);
+                        aiState = "Wander";
+                    }
+                    break;
+                case "Wander":
+                    FaceTarget(targetPosition);
+                    Sway(true, true, swayRateIdle, swayAmountIdle);
+                    MoveTowardsTarget(targetPosition, walkSpeed);
+                    _wanderTimer += Time.deltaTime;
+                    if (Vector2.Distance(transform.position, targetPosition) < 0.1f || _wanderTimer >= _wanderDelay)
+                    {
+                        _wanderTimer = 0.0f;
+                        _wanderDelay = Random.Range(8.0f, 12.0f);
+                        aiState = "Idle";
+                    }
+                    break;
+                case "Look":
+                    FaceTarget(targetPosition);
+                    Sway();
+                    break;
+                case "Investigate":
+                    FaceTarget(targetPosition);
+                    Sway();
+                    MoveTowardsTarget(targetPosition, investigateSpeed);
+                    break;
+                case "Alert":
+                    gm.alarmManager.startAlarm();
+                    if (gm.alarmManager.alarmStage < 2)
+                    {
+                        _alertProgress += Time.deltaTime;
+                        if (_alertProgress >= 1.0f)
+                        {
+                            gm.alarmManager.advanceAlarmTo(2);
+                        }
+                    }
+                    else
+                    {
+                        if (visibleTargets.Count > 0)
+                        {
+                            _fireDelay += Time.deltaTime;
+                            if (_fireDelay >= fireRate)
+                            {
+                                _fireDelay = 0.0f;
+                                gm.bulletSpawner.SpawnBulletEnemy(transform, targetPosition);
+                            }
+                        }
+                        else
+                        {
+                            aiState = "Search";
+                            Move();
+                            break;
+                        }
+                        FaceTarget(targetPosition);
+                        Sway();
+                    }
+                    break;
+                case "Search":
+                    FaceTarget(targetPosition);
+                    Sway(true, true, swayRateSearch, swayAmountSearch);
+
+                    _fireDelay = 0.25f;
+                    MoveTowardsTarget(targetPosition, runSpeed);
+                    break;
+                case "Dead":
+                    Sway();
+                    break;
+            }
+        }
+    }
+
+    void FaceTarget(Vector2 target)
+    {
+        Vector2 dirToTarget = (target - (Vector2)transform.position).normalized;
+        transform.rotation = Quaternion.Euler(0, 0, Mathf.Atan2(dirToTarget.y, dirToTarget.x) * Mathf.Rad2Deg - 90);
+    }
+
+    void MoveTowardsTarget(Vector2 target, float speed)
+    {
+        transform.position = Vector3.MoveTowards(transform.position, target, Time.deltaTime * speed);
+    }
+
+    void Sway(bool doSway = false, bool facingLocked = false, float swayRate = 1.0f, float swayAmount = 5.0f)
+    {
+        if (!doSway)
+        {
+            _swayTimer = 0.0f;
+            _swayOffset = 0.0f;
+            if (!facingLocked) transform.rotation = Quaternion.Euler(transform.eulerAngles.x, transform.eulerAngles.y, transform.eulerAngles.z - _swayOffset);
+            return;
+        }
+        if (!facingLocked) transform.rotation = Quaternion.Euler(transform.eulerAngles.x, transform.eulerAngles.y, transform.eulerAngles.z - _swayOffset);
+        _swayTimer += Time.deltaTime;
+        float sway = Mathf.Sin(_swayTimer / swayRate) * swayAmount;
+        transform.rotation = Quaternion.Euler(transform.eulerAngles.x, transform.eulerAngles.y, transform.eulerAngles.z + sway);
+        _swayOffset = sway;
+    }
+
+    Vector2 FindWanderTarget()
+    {
+        bool valid = false;
+        int attempts = 0;
+        Vector2 randomTarget = Vector2.zero;
+        while (!valid)
+        {
+            randomTarget = new Vector2(transform.position.x + Random.Range(-4.0f, 4.0f) * Random.Range(-4.0f, 4.0f), transform.position.y + Random.Range(-4.0f, 4.0f) * Random.Range(-4.0f, 4.0f));
+
+            Vector3 direction = randomTarget - (Vector2)transform.position;
+            float distance = direction.magnitude;
+            RaycastHit hit;
+            valid = !Physics.Raycast(transform.position, direction, out hit, distance, obstacleMask);
+            attempts++;
+            if (attempts > wanderTargetAttempts)
+            {
+                return randomTarget;
+            }
+        }
+        return randomTarget;
     }
 
     void Render()
@@ -59,35 +225,60 @@ public class NPC : MonoBehaviour {
         if (_alive)
         {
             _sprite.sprite = sprites[0];
-        } else
+            detectionBars[0].localScale = new Vector3(Mathf.Clamp(_detection, 0, 1), 0.25f, 1);
+            detectionBars[1].localScale = new Vector3(Mathf.Clamp(_detection - 1, 0, 1), 0.25f, 1);
+            detectionBars[2].localScale = new Vector3(Mathf.Clamp(_detection - 2, 0, 1), 0.25f, 1);
+            viewMeshFilter.gameObject.SetActive(true);
+        }
+        else
         {
             _sprite.sprite = sprites[1];
+            detectionBars[0].localScale = new Vector3(0, 0.25f, 1);
+            detectionBars[1].localScale = new Vector3(0, 0.25f, 1);
+            detectionBars[2].localScale = new Vector3(0, 0.25f, 1);
+            viewMeshFilter.gameObject.SetActive(false);
         }
 
         _spriteTransform.rotation = Quaternion.Euler(0, 0, 0);
-
-        detectionBars[0].localScale = new Vector3(Mathf.Clamp(_detection, 0, 1), 0.25f, 1);
-        detectionBars[1].localScale = new Vector3(Mathf.Clamp(_detection - 1, 0, 1), 0.25f, 1);
-        detectionBars[2].localScale = new Vector3(Mathf.Clamp(_detection - 2, 0, 1), 0.25f, 1);
     }
 
     void DetectPlayer()
     {
         if (visibleTargets.Count > 0)
         {
-            _detection += Time.deltaTime;
+            _detection += Time.deltaTime * detectionSpeed;
+            if (_detection >= 1.0f)
+            {
+                targetPosition = visibleTargets[0].position;
+                aiState = "Look";
+            }
+            if (_detection >= 2.0f)
+            {
+                aiState = "Investigate";
+            }
             if (_detection >= 3.0f)
             {
-                gm.alarmManager.startAlarm();
+                aiState = "Alert";
                 _detection = 3.0f;
             }
         }
         else
         {
-            _detection -= Time.deltaTime;
-            if (_detection < 0.0f)
+            if (_detection < 3.0f)
             {
-                _detection = 0.0f;
+                _detection -= Time.deltaTime;
+                if (_detection < 2.0f && aiState == "Investigate")
+                {
+                    aiState = "Look";
+                }
+                if (_detection < 1.0f && (aiState == "Look" || aiState == "Investigate"))
+                {
+                    aiState = "Idle";
+                }
+                if (_detection <= 0.0f)
+                {
+                    _detection = 0.0f;
+                }
             }
         }
     }
@@ -97,7 +288,7 @@ public class NPC : MonoBehaviour {
     {
         if (!_alive) return;
 
-        if (other.gameObject.CompareTag("Bullet"))
+        if (other.gameObject.CompareTag("Bullet") && other.gameObject.GetComponent<Bullet>().allegiance == "Player")
         {
             _alive = false;
             switch (type)

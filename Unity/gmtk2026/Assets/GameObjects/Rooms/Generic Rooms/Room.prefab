@@ -2521,6 +2521,7 @@ MonoBehaviour:
   player: {fileID: 0}
   alarmManager: {fileID: 0}
   alarmed: 1
+  spawnGuards: 1
   roomSize: {x: 8, y: 8}
 --- !u!1 &4414391179575087393
 GameObject:

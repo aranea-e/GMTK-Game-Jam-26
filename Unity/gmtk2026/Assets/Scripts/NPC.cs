@@ -3,6 +3,8 @@ using System.Collections.Generic;
 
 public class NPC : MonoBehaviour {
     private SpriteRenderer _sprite;
+    private Transform _spriteTransform;
+    public Transform[] detectionBars;
 
     public string type;
     public Sprite[] sprites;
@@ -25,11 +27,15 @@ public class NPC : MonoBehaviour {
     public MeshFilter viewMeshFilter;
     Mesh viewMesh;
 
+    private float _detection = 0.0f;
+
     void Awake()
     {
         gm = FindObjectOfType<GameManager>();
 
         _sprite = GetComponentInChildren<SpriteRenderer>();
+        _spriteTransform = _sprite.transform;
+
         visibleTargets = new List<Transform>();
         viewMesh = new Mesh();
         viewMesh.name = "View Mesh";
@@ -44,6 +50,46 @@ public class NPC : MonoBehaviour {
     {
         FindVisibleTargets();
         DrawFieldOfView();
+        DetectPlayer();
+        Render();
+    }
+
+    void Render()
+    {
+        if (_alive)
+        {
+            _sprite.sprite = sprites[0];
+        } else
+        {
+            _sprite.sprite = sprites[1];
+        }
+
+        _spriteTransform.rotation = Quaternion.Euler(0, 0, 0);
+
+        detectionBars[0].localScale = new Vector3(Mathf.Clamp(_detection, 0, 1), 0.25f, 1);
+        detectionBars[1].localScale = new Vector3(Mathf.Clamp(_detection - 1, 0, 1), 0.25f, 1);
+        detectionBars[2].localScale = new Vector3(Mathf.Clamp(_detection - 2, 0, 1), 0.25f, 1);
+    }
+
+    void DetectPlayer()
+    {
+        if (visibleTargets.Count > 0)
+        {
+            _detection += Time.deltaTime;
+            if (_detection >= 3.0f)
+            {
+                gm.alarmManager.startAlarm();
+                _detection = 3.0f;
+            }
+        }
+        else
+        {
+            _detection -= Time.deltaTime;
+            if (_detection < 0.0f)
+            {
+                _detection = 0.0f;
+            }
+        }
     }
 
 
@@ -54,7 +100,6 @@ public class NPC : MonoBehaviour {
         if (other.gameObject.CompareTag("Bullet"))
         {
             _alive = false;
-            _sprite.sprite = sprites[1];
             switch (type)
             {
                 case "Target":
@@ -110,7 +155,7 @@ public class NPC : MonoBehaviour {
 
         for (int i = 0; i <= stepCount; i++)
         {
-            float angle = transform.eulerAngles.z - viewAngle / 2 + stepAngleSize * i;
+            float angle = -transform.eulerAngles.z - viewAngle / 2 + stepAngleSize * i;
             ViewCastInfo newViewCast = ViewCast(angle);
 
             if (i > 0)

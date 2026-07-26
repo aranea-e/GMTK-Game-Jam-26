@@ -67,9 +67,9 @@ public class AlarmManager : MonoBehaviour
         if (alarmStage > 2)
         {
             alarmTimer = 0;
+            updateUI();
             stopAlarm();
-
-            FindObjectOfType<GameManager>().endGame("Police arrived. You failed to escape.");
+            FindObjectOfType<GameManager>().endGame(2);
         }
     }
 
@@ -80,8 +80,10 @@ public class AlarmManager : MonoBehaviour
         alarmTimer = alarmDuration;
         if (alarmStage > 2)
         {
-            FindObjectOfType<GameManager>().endGame("Police arrived. You failed to escape.");
+            alarmTimer = 0;
+            updateUI();
             stopAlarm();
+            FindObjectOfType<GameManager>().endGame(2);
         }
     }
 
@@ -97,7 +99,7 @@ public class AlarmManager : MonoBehaviour
         if (!alarmActive) return;
 
         float percent = alarmTimer / alarmDuration;
-        if (alarmStage > 2) percent = 1;
+        if (alarmStage > 2) percent = 0;
 
         float barWidth = 158 * (1.0f - percent);
         float barPosX = 17 + (barWidth) / 2;

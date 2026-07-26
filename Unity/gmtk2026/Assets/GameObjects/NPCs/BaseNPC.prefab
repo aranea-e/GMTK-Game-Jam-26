@@ -94,6 +94,7 @@ GameObject:
   m_Component:
   - component: {fileID: 363203170813517931}
   - component: {fileID: 7809754166593877410}
+  - component: {fileID: 354497147699611438}
   m_Layer: 8
   m_Name: Sprite
   m_TagString: Untagged
@@ -158,8 +159,8 @@ SpriteRenderer:
   m_SortingLayerID: 751388125
   m_SortingLayer: 5
   m_SortingOrder: 0
-  m_Sprite: {fileID: 98776645569559479, guid: 295e9e1745c555c41b4437ce115126ca, type: 3}
-  m_Color: {r: 1, g: 0, b: 0.009747028, a: 1}
+  m_Sprite: {fileID: -99553266657363284, guid: 8a14da9d3962e01438b1567c2fd92d88, type: 3}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
@@ -169,6 +170,27 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
+--- !u!95 &354497147699611438
+Animator:
+  serializedVersion: 5
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3732021206213427478}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: e455690b77c9bc94bab8cfe74723a012, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0
 --- !u!1 &5577371720122322023
 GameObject:
   m_ObjectHideFlags: 0
@@ -350,6 +372,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   detectionSpeed: 2
+  animator: {fileID: 354497147699611438}
   detectionBars:
   - {fileID: 8294089496097494228}
   - {fileID: 8022635384349072416}
@@ -369,13 +392,13 @@ MonoBehaviour:
     m_Bits: 1024
   visibleTargets: []
   meshResolution: 1
-  edgeResolveIterations: 6
-  edgeDstThreshold: 0
+  edgeResolveIterations: 12
+  edgeDstThreshold: 1
   viewMeshFilter: {fileID: 8670745798910343910}
   targetPosition: {x: 0, y: 0}
   aiState: Idle
   walkSpeed: 2
-  investigateSpeed: 5
+  investigateSpeed: 3
   runSpeed: 4
   _alertProgress: 0
   _fireDelay: 0.25

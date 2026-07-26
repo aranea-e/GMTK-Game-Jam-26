@@ -4,8 +4,10 @@ using System.Collections.Generic;
 public class NPC : MonoBehaviour
 {
     public float detectionSpeed = 1.0f;
+    bool called = false;
 
     private SpriteRenderer _sprite;
+    public Animator animator;
     private Transform _spriteTransform;
     public Transform[] detectionBars;
 
@@ -128,35 +130,62 @@ public class NPC : MonoBehaviour
                     break;
                 case "Alert":
                     gm.alarmManager.startAlarm();
-                    if (gm.alarmManager.alarmStage < 2)
+                    if (!called)
                     {
                         _alertProgress += Time.deltaTime;
                         if (_alertProgress >= 1.0f)
                         {
-                            gm.alarmManager.advanceAlarmTo(2);
+                            gm.alarmManager.advanceAlarmTimer(10.0f);
+                            called = true;
                         }
                     }
                     else
                     {
-                        if (visibleTargets.Count > 0)
+                        switch (type)
                         {
-                            _fireDelay += Time.deltaTime;
-                            if (_fireDelay >= fireRate)
-                            {
-                                _fireDelay = 0.0f;
-                                gm.bulletSpawner.SpawnBulletEnemy(transform, targetPosition);
-                            }
+                            case "Guard":
+                                aiState = "Attack";
+                                break;
+                            default:
+                                aiState = "Panic";
+                                break;
                         }
-                        else
-                        {
-                            aiState = "Search";
-                            Move();
-                            break;
-                        }
-                        FaceTarget(targetPosition);
-                        Sway();
                     }
                     break;
+                case "Panic":
+                    FaceTarget(targetPosition);
+                    Sway(true, true, swayRateSearch, swayAmountIdle);
+                    MoveTowardsTarget(targetPosition, runSpeed);
+                    _wanderTimer += Time.deltaTime;
+                    if (Vector2.Distance(transform.position, targetPosition) < 0.1f || _wanderTimer >= _wanderDelay)
+                    {
+                        _wanderTimer = 0.0f;
+                        _wanderDelay = Random.Range(2.0f, 5.0f);
+                        targetPosition = FindWanderTarget();
+                    }
+
+                    break;
+
+                case "Attack":
+                    if (visibleTargets.Count > 0)
+                    {
+                        _fireDelay += Time.deltaTime;
+                        if (_fireDelay >= fireRate)
+                        {
+                            _fireDelay = 0.0f;
+                            gm.bulletSpawner.SpawnBulletEnemy(transform, targetPosition);
+                        }
+                    }
+                    else
+                    {
+                        aiState = "Search";
+                        Move();
+                        break;
+                    }
+                    FaceTarget(targetPosition);
+                    Sway();
+                    break;
+
                 case "Search":
                     FaceTarget(targetPosition);
                     Sway(true, true, swayRateSearch, swayAmountSearch);
@@ -222,9 +251,36 @@ public class NPC : MonoBehaviour
 
     void Render()
     {
+        int animState = animator.GetInteger("Anim");
+
         if (_alive)
         {
-            _sprite.sprite = sprites[0];
+            switch (aiState)
+            {
+                case "Wander":
+                case "Investigate":
+                    animator.SetInteger("Anim", 1);
+                    break;
+
+                case "Alert":
+                    animator.SetInteger("Anim", 2);
+                    break;
+
+                case "Panic":
+                case "Attack":
+                    animator.SetInteger("Anim", 3);
+                    break;
+
+                case "Search":
+                    animator.SetInteger("Anim", 5);
+                    break;
+
+                case "Idle":
+                case "Look":
+                default:
+                    animator.SetInteger("Anim", 0);
+                    break;
+            }
             detectionBars[0].localScale = new Vector3(Mathf.Clamp(_detection, 0, 1), 0.25f, 1);
             detectionBars[1].localScale = new Vector3(Mathf.Clamp(_detection - 1, 0, 1), 0.25f, 1);
             detectionBars[2].localScale = new Vector3(Mathf.Clamp(_detection - 2, 0, 1), 0.25f, 1);
@@ -232,11 +288,16 @@ public class NPC : MonoBehaviour
         }
         else
         {
-            _sprite.sprite = sprites[1];
+            animator.SetInteger("Anim", 4);
             detectionBars[0].localScale = new Vector3(0, 0.25f, 1);
             detectionBars[1].localScale = new Vector3(0, 0.25f, 1);
             detectionBars[2].localScale = new Vector3(0, 0.25f, 1);
             viewMeshFilter.gameObject.SetActive(false);
+        }
+
+        if (animState != animator.GetInteger("Anim"))
+        {
+            animator.SetTrigger("ChangeAnim");
         }
 
         _spriteTransform.rotation = Quaternion.Euler(0, 0, 0);
@@ -246,20 +307,24 @@ public class NPC : MonoBehaviour
     {
         if (visibleTargets.Count > 0)
         {
+            detectionSpeed = FindObjectOfType<AlarmManager>().alarmStage + 1;
             _detection += Time.deltaTime * detectionSpeed;
             if (_detection >= 1.0f)
             {
                 targetPosition = visibleTargets[0].position;
-                aiState = "Look";
+                if (aiState != "Alert" && aiState != "Panic" && aiState != "Attack" && aiState != "Investigate" && aiState != "Look")
+                    aiState = "Look";
             }
             if (_detection >= 2.0f)
             {
-                aiState = "Investigate";
+                if (aiState != "Alert" && aiState != "Panic" && aiState != "Attack" && aiState != "Investigate")
+                    aiState = "Investigate";
             }
             if (_detection >= 3.0f)
             {
-                aiState = "Alert";
+                if (aiState != "Alert" && aiState != "Panic" && aiState != "Attack") aiState = "Alert";
                 _detection = 3.0f;
+                if (type == "Target") targetPosition = FindWanderTarget();
             }
         }
         else
@@ -291,6 +356,7 @@ public class NPC : MonoBehaviour
         if (other.gameObject.CompareTag("Bullet") && other.gameObject.GetComponent<Bullet>().allegiance == "Player")
         {
             _alive = false;
+            FindObjectOfType<audioManager>().play("Hit");
             switch (type)
             {
                 case "Target":

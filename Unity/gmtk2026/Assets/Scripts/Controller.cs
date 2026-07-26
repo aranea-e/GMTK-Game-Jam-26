@@ -1,6 +1,12 @@
 using UnityEngine;
 
 public class Controller : MonoBehaviour {
+
+    public Animator animator;
+    private float _firedTime;
+    public float fireDuration;
+    public bool alive = true;
+
     [SerializeField] private float _moveSpeed;
     [SerializeField] private float _friction;
     [SerializeField] private float _jumpHeight;
@@ -30,6 +36,35 @@ public class Controller : MonoBehaviour {
         move(readMoveInput(), _moveSpeed);
         jump();
         fire();
+        render();
+    }
+
+    public void render()
+    {
+        int animState = animator.GetInteger("Anim");
+        if (readMoveInput().x != 0 || readMoveInput().y != 0)
+        {
+            animator.SetInteger("Anim", 1);
+        } else
+        {
+            animator.SetInteger("Anim", 0);
+        }
+
+        if (_firedTime > 0.0f)
+        {
+            _firedTime -= Time.deltaTime;
+            animator.SetInteger("Anim", animator.GetInteger("Anim") + 2);
+        }
+
+        if (!alive)
+        {
+            animator.SetInteger("Anim", 4);
+        }
+
+        if (animState != animator.GetInteger("Anim"))
+        {
+            animator.SetTrigger("ChangeAnim");
+        }
     }
 
     Vector2 readMoveInput() {
@@ -91,6 +126,7 @@ public class Controller : MonoBehaviour {
     void jump() {
         if (Input.GetKeyDown(KeyCode.Space) && isGrounded()) {
             rb.velocity = new Vector3(rb.velocity.x, rb.velocity.y, _jumpHeight);
+            FindObjectOfType<audioManager>().play("Jump");
         }
     }
 
@@ -99,6 +135,8 @@ public class Controller : MonoBehaviour {
         if (Input.GetMouseButtonDown(0))
         {
             _bulletSpawner.SpawnBulletPlayer();
+            _firedTime = fireDuration;
+            FindObjectOfType<audioManager>().play("Shoot");
         }
     }
 
@@ -173,7 +211,7 @@ public class Controller : MonoBehaviour {
             case "Van":
                 if (gm.objectivesCompleted())
                 {
-                    gm.endGame("Target eliminated. You escaped successfully.");
+                    gm.endGame(0);
                 }
                 break;
             case "Window":
@@ -182,7 +220,7 @@ public class Controller : MonoBehaviour {
             case "Bullet":
                 if (other.gameObject.GetComponent<Bullet>().allegiance == "Enemy")
                 {
-                    gm.endGame("You were shot, dumbahh");
+                    gm.endGame(1);
                 }
                 break;
         }

@@ -1,14 +1,19 @@
 using UnityEngine;
+using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 using TMPro;
 
 public class Menu : MonoBehaviour {
-    public TextMeshProUGUI lastRoundText;
+    public Image playerPlacard;
+    public Image targetPlacard;
+
+    public Sprite[] placardSprites;
     
 
     void Start()
     {
-        setLastRoundText(FindObjectOfType<TransitionInfo>().result);
+        playerPlacard.sprite = placardSprites[FindObjectOfType<TransitionInfo>().playerResult];
+        targetPlacard.sprite = placardSprites[FindObjectOfType<TransitionInfo>().targetResult];
     }
 
     void Update()
@@ -18,11 +23,7 @@ public class Menu : MonoBehaviour {
 
     public void LoadScene(int sceneIndex)
     {
+        FindObjectOfType<audioManager>().play("Select");
         SceneManager.LoadScene(sceneIndex);
-    }
-
-    void setLastRoundText(string text)
-    {
-        lastRoundText.text = text;
     }
 }

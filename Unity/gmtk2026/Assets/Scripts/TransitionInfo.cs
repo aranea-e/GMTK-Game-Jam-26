@@ -1,7 +1,8 @@
 using UnityEngine;
 
 public class TransitionInfo : MonoBehaviour {
-    public string result;
+    public int playerResult;
+    public int targetResult;
 
     void Awake()
     {
